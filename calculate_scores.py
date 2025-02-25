@@ -1,6 +1,11 @@
 import requests
+import os
 import pandas as pd
 from bs4 import BeautifulSoup
+
+GITHUB_ORG = "Lok-Jagruti-Kendra-University"
+GITHUB_TOKEN = "my-ljku-artifacts-token"
+HEADERS = {"Authorization": f"token {GITHUB_TOKEN}"}
 
 print(pd.__version__)
 
@@ -82,45 +87,6 @@ def aggregate_scores():
 # SonarCloud Summary Page URL
 SONARCLOUD_URL = "https://sonarcloud.io/summary/overall?id=Lok-Jagruti-Kendra-University_testai&branch=main"
 
-def fetch_sonarcloud_summary():
-    """Fetch and extract SonarCloud summary data."""
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"
-    }
-    response = requests.get(SONARCLOUD_URL, headers=headers)
-
-    if response.status_code != 200:
-        print("Failed to fetch data from SonarCloud")
-        return None
-
-    # Parse HTML content
-    soup = BeautifulSoup(response.text, "html.parser")
-    #print(soup.prettify())  # Prints the full HTML of the page
-    
-    # Extract metrics (example: Bugs, Code Smells, Vulnerabilities)
-    metrics = {}
-    
-    # Example: Extracting bugs count (Modify selectors based on SonarCloud changes)
-    #bugs_element = soup.find("div", class_="metric-label", text="Bugs")
-    bugs_element = soup.find("div", class_="metric-label", string="Bugs")
-    if bugs_element:
-        bugs_value = bugs_element.find_next_sibling("div").text.strip()
-        metrics["Bugs"] = bugs_value
-
-    # Example: Extracting Code Smells
-    code_smells_element = soup.find("div", class_="metric-label", string="Code Smells")
-    if code_smells_element:
-        code_smells_value = code_smells_element.find_next_sibling("div").text.strip()
-        metrics["Code Smells"] = code_smells_value
-
-    # Example: Extracting Vulnerabilities
-    vulnerabilities_element = soup.find("div", class_="metric-label", string="Vulnerabilities")
-    if vulnerabilities_element:
-        vulnerabilities_value = vulnerabilities_element.find_next_sibling("div").text.strip()
-        metrics["Vulnerabilities"] = vulnerabilities_value
-
-    return metrics
-
 def save_to_excel(data):
     if not data:
         print("No data to save")
@@ -129,10 +95,41 @@ def save_to_excel(data):
     df.to_excel("sonarcloud_summary.xlsx", index=False)
     print("Saved to sonarcloud_summary.xlsx")
 
+def get_repositories():
+    url = f"https://api.github.com/orgs/{GITHUB_ORG}/repos"
+    response = requests.get(url, headers=HEADERS)
+    return [repo["name"] for repo in response.json()]
+
+def get_latest_workflow_run(repo):
+    url = f"https://api.github.com/repos/{GITHUB_ORG}/{repo}/actions/runs"
+    response = requests.get(url, headers=HEADERS)
+    runs = response.json().get("workflow_runs", [])
+    return runs[0]["id"] if runs else None
+
+def download_artifact(repo, run_id):
+    url = f"https://api.github.com/repos/{GITHUB_ORG}/{repo}/actions/runs/{run_id}/artifacts"
+    response = requests.get(url, headers=HEADERS)
+    artifacts = response.json().get("artifacts", [])
+    
+    if artifacts:
+        artifact_url = artifacts[0]["archive_download_url"]
+        response = requests.get(artifact_url, headers=HEADERS)
+        
+        with open(f"artifacts/{repo}.zip", "wb") as file:
+            file.write(response.content)
+        print(f"Downloaded artifacts for {repo}")
+    else:
+        print(f"No artifacts found for {repo}")
+
 if __name__ == "__main__":
     #summary_data = fetch_sonarcloud_summary()
     data = fetch_sonarcloud_score()
     save_to_excel(data)
 
+    os.makedirs("artifacts", exist_ok=True)
+    for repo in get_repositories():
+        run_id = get_latest_workflow_run(repo)
+        if run_id:
+            download_artifact(repo, run_id)
     #scores = aggregate_scores()
     #print("Aggregated Scores:", scores)
