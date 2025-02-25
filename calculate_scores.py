@@ -50,13 +50,13 @@ def fetch_sonarcloud_score():
         #- **Code Coverage**: 30%
         #  coverage_score = (coverage_percentage / 100) * 30
         #- **Bugs**: 20%
-          bugs_score = (1 - (bugs_count / total_files)) * 30
+        bugs_score = (1 - (bugs_count / total_files)) * 30
         #- **Vulnerabilities**: 20%
-          vulnerabilities_score = (1 - (vulnerabilities_count / total_files)) * 30
+        vulnerabilities_score = (1 - (vulnerabilities_count / total_files)) * 30
         #- **Code Smells**: 20%
-          code_smells_score = (1 - (code_smells_count / total_files)) * 25
+        code_smells_score = (1 - (code_smells_count / total_files)) * 25
         #- **Duplicated Lines**: 10%
-          duplicated_lines_score = (1 - (duplicated_lines_percentage / 100)) * 15
+        duplicated_lines_score = (1 - (duplicated_lines_percentage / 100)) * 15
         
         ## Final Score Calculation
         
