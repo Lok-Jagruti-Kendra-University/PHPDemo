@@ -126,10 +126,5 @@ if __name__ == "__main__":
     data = fetch_sonarcloud_score()
     save_to_excel(data)
 
-    os.makedirs("artifacts", exist_ok=True)
-    for repo in get_repositories():
-        run_id = get_latest_workflow_run(repo)
-        if run_id:
-            download_artifact(repo, run_id)
     #scores = aggregate_scores()
     #print("Aggregated Scores:", scores)
