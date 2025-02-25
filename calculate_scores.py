@@ -40,11 +40,11 @@ def fetch_sonarcloud_score():
         measures = data.get("component", {}).get("measures", [])
 
         # SonarCloud Evaluation Formula
-        code_smells_count = next((m["value"] for m in measures if m["metric"] == "code_smells"), 0)
-        bugs_count = next((m["value"] for m in measures if m["metric"] == "bugs"), 0)
-        vulnerabilities_count = next((m["value"] for m in measures if m["metric"] == "vulnerabilities"), 0)
-        duplicated_lines_percentage = next((m["value"] for m in measures if m["metric"] == "duplicated_lines_density"), 0)
-        total_files = next((m["value"] for m in measures if m["metric"] == "files"), 0)
+        code_smells_count = float(next((m["value"] for m in measures if m["metric"] == "code_smells"), 0))
+        bugs_count = float(next((m["value"] for m in measures if m["metric"] == "bugs"), 0))
+        vulnerabilities_count = float(next((m["value"] for m in measures if m["metric"] == "vulnerabilities"), 0))
+        duplicated_lines_percentage = float(next((m["value"] for m in measures if m["metric"] == "duplicated_lines_density"), 0))
+        total_files = float(next((m["value"] for m in measures if m["metric"] == "files"), 0))
         
         ## Metrics and Weights
         #- **Code Coverage**: 30%
