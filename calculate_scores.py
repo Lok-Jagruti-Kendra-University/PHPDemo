@@ -15,7 +15,7 @@ def fetch_sonarcloud_score():
     params = {
         "component": "Lok-Jagruti-Kendra-University_PHPDemo",  # Your SonarCloud project key
         "branch":"main",
-        "metricKeys": "coverage,ncloc,vulnerabilities,bugs,code_smells, security_hotspots,duplicated_lines_density, cognitive_complexity,security_rating,sqale_rating, reliability_rating"
+        "metricKeys": "coverage,ncloc, files,statements, vulnerabilities,bugs,code_smells, security_hotspots,duplicated_lines_density, cognitive_complexity,security_rating,sqale_rating, reliability_rating"
     }
     response = requests.get(url, params=params)
     # Debugging output
@@ -32,11 +32,36 @@ def fetch_sonarcloud_score():
 
     # Extract metrics
     scores = {m["metric"]: m["value"] for m in measures}
-    return scores
+        
+    print(scores)
     
     if response.status_code == 200:
         data = response.json()
         measures = data.get("component", {}).get("measures", [])
+
+        # SonarCloud Evaluation Formula
+        code_smells_count = next((m["value"] for m in measures if m["metric"] == "code_smells"), 0)
+        bugs_count = next((m["value"] for m in measures if m["metric"] == "bugs"), 0)
+        vulnerabilities_count = next((m["value"] for m in measures if m["metric"] == "vulnerabilities"), 0)
+        duplicated_lines_percentage = next((m["value"] for m in measures if m["metric"] == "duplicated_lines_density"), 0)
+        total_files = next((m["value"] for m in measures if m["metric"] == "files"), 0)
+        
+        ## Metrics and Weights
+        #- **Code Coverage**: 30%
+        #  coverage_score = (coverage_percentage / 100) * 30
+        #- **Bugs**: 20%
+          bugs_score = (1 - (bugs_count / total_files)) * 30
+        #- **Vulnerabilities**: 20%
+          vulnerabilities_score = (1 - (vulnerabilities_count / total_files)) * 30
+        #- **Code Smells**: 20%
+          code_smells_score = (1 - (code_smells_count / total_files)) * 25
+        #- **Duplicated Lines**: 10%
+          duplicated_lines_score = (1 - (duplicated_lines_percentage / 100)) * 15
+        
+        ## Final Score Calculation
+        
+        final_score = bugs_score + vulnerabilities_score + code_smells_score + duplicated_lines_score  #coverage_score + 
+        return final_score;
         
         # Example: Extracting coverage score
         code_smells = next((m["value"] for m in measures if m["metric"] == "code_smells"), 0)
