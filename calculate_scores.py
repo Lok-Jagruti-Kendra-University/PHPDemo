@@ -49,65 +49,26 @@ def fetch_sonarcloud_score():
         ## Metrics and Weights
         #- **Code Coverage**: 30%
         #  coverage_score = (coverage_percentage / 100) * 30
-        #- **Bugs**: 20%
+        #- **Bugs**: 30%
         bugs_score = (1 - (bugs_count / total_files)) * 30
-        #- **Vulnerabilities**: 20%
+        #- **Vulnerabilities**: 30%
         vulnerabilities_score = (1 - (vulnerabilities_count / total_files)) * 30
-        #- **Code Smells**: 20%
+        #- **Code Smells**: 25%
         code_smells_score = (1 - (code_smells_count / total_files)) * 25
-        #- **Duplicated Lines**: 10%
+        #- **Duplicated Lines**: 15%
         duplicated_lines_score = (1 - (duplicated_lines_percentage / 100)) * 15
         
         ## Final Score Calculation
-        
         final_score = bugs_score + vulnerabilities_score + code_smells_score + duplicated_lines_score  #coverage_score + 
-        return final_score;
+        scores["Final Score"] = final_score;
+        
+        return scores;
         
         # Example: Extracting coverage score
         code_smells = next((m["value"] for m in measures if m["metric"] == "code_smells"), 0)
         return float(code_smells)
     
     return 0  # Default to 0 if request fails
-
-def fetch_mlflow_score():
-    """Fetch an example MLflow metric (dummy API, replace with real MLflow API)."""
-    url = "http://mlflow-server.example.com/api/2.0/mlflow/metrics/get"
-    params = {
-        "run_id": "some-run-id",
-        "metric_key": "accuracy"
-    }
-    response = requests.get(url)
-    
-    if response.status_code == 200:
-        data = response.json()
-        return float(data.get("metric", {}).get("value", 0)) * 100  # Convert to percentage
-    return 0
-
-def fetch_deepsource_score():
-    """Fetch DeepSource score (Example API call, replace with actual API)."""
-    url = "https://deepsource.io/api/v1/some_project/issues/statistics"
-    headers = {"Authorization": "Token YOUR_DEEPSOURCE_API_KEY"}
-    response = requests.get(url, headers=headers)
-    
-    if response.status_code == 200:
-        data = response.json()
-        return 100 - int(data.get("issue_count", 0))  # Assuming fewer issues = better score
-    return 0
-
-def aggregate_scores():
-    """Aggregate scores from all sources."""
-    #sonar_score = fetch_sonarcloud_score()
-    mlflow_score = 30 #fetch_mlflow_score()
-    deepsource_score = 30 #fetch_deepsource_score()
-    return sonar_score
-    overall_score = (sonar_score + mlflow_score + deepsource_score) / 3
-    return {
-        "SonarCloud": sonar_score,
-        "MLflow": mlflow_score,
-        "DeepSource": deepsource_score,
-        "Overall Score": round(overall_score, 2)
-    }
-
 
 # SonarCloud Summary Page URL
 SONARCLOUD_URL = "https://sonarcloud.io/summary/overall?id=Lok-Jagruti-Kendra-University_PHPDemo&branch=main"
